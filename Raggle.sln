@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raggle.CoreTests", "tests\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raggle.Console", "src\Raggle.Console\Raggle.Console.csproj", "{75428BC6-29CB-4BD4-8C7F-F77AAE938C26}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raggle.Abstractions", "src\Raggle.Abstractions\Raggle.Abstractions.csproj", "{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{75428BC6-29CB-4BD4-8C7F-F77AAE938C26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75428BC6-29CB-4BD4-8C7F-F77AAE938C26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75428BC6-29CB-4BD4-8C7F-F77AAE938C26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +59,7 @@ Global
 		{5D380B6F-6F04-4426-B243-823B66ADC83F} = {12A364EB-9356-4432-9D64-CA3C22131478}
 		{BDDAE76D-BC53-4BEB-9B5C-A77830CC3A66} = {E79137DC-9E57-4B4D-AF15-20040AE4DA5D}
 		{75428BC6-29CB-4BD4-8C7F-F77AAE938C26} = {12A364EB-9356-4432-9D64-CA3C22131478}
+		{4DAD393A-5B3B-43A2-8B65-6360D4C7374D} = {12A364EB-9356-4432-9D64-CA3C22131478}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F39F8A9-D306-4751-B5C7-385BB668B8B0}

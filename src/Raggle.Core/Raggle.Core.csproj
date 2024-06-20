@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.64.240619.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Raggle.Abstractions\Raggle.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>
