@@ -1,43 +1,53 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
+﻿using Raggle.Console.Settings;
+using Raggle.Console.UI.Setup;
+using Spectre.Console;
 
 namespace Raggle.Console.UI;
 
 public class SetupUI
 {
-    public SetupUI()
+    public AppSettings Setup(string baseDir)
     {
-        // Set the base directory for the application
-        var baseDir = Debugger.IsAttached
-            ? Constants.DEBUG_DIRECTORY
-            : Directory.GetCurrentDirectory();
-        System.Console.WriteLine($"Working directory: {baseDir}");
+        var step1 = new PromptSetup();
+        var prompt = step1.Setup();
 
-        // Create the configuration directory and save the settings
-        var configDir = Path.Combine(baseDir, Constants.SETTING_DIRECTORY);
-        var dirInfo = Directory.CreateDirectory(configDir);
-        dirInfo.Attributes = FileAttributes.Directory | FileAttributes.Hidden;
-        var settings = new
+        var step2 = new PlatformSetup();
+        var platformType = step2.Setup();
+
+        var openAI = new OpenAISetting();
+        var azureAI = new AzureAISetting();
+        var googleAI = new GoogleAISetting();
+
+        if (platformType == AIPlatforms.OpenAI)
         {
-            OpenAI = new
-            {
-                ApiKey = ""
-            }
+            var step3 = new OpenAISetup();
+            openAI = step3.Setup();
+        }
+        else if (platformType == AIPlatforms.AzureAI)
+        {
+            var step3 = new AzureAISetup();
+            azureAI = step3.Setup();
+        }
+        else if (platformType == AIPlatforms.GoogleAI)
+        {
+            var step3 = new GoogleAISetup();
+            googleAI = step3.Setup();
+        }
+
+        return new AppSettings
+        {
+            WorkingDirectory = baseDir,
+            Prompt = prompt,
+            PlatformType = platformType,
+            OpenAI = openAI,
+            AzureAI = azureAI,
+            GoogleAI = googleAI,
         };
-        File.WriteAllText(Path.Combine(configDir, Constants.SETTING_FILENAME), JsonSerializer.Serialize(settings, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-        }));
     }
 
-    public void Start()
+    public static void Exit()
     {
-        
-    }
-
-    public void Exit()
-    {
-        System.Console.WriteLine("Press any key to exit...");
-        System.Console.ReadKey();
+        AnsiConsole.MarkupLine("[red]Exiting the setup. Goodbye![/]");
+        Environment.Exit(0);
     }
 }

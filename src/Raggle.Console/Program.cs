@@ -1,25 +1,52 @@
-﻿using System.CommandLine;
-
-var pathOption = new Option<string>("--path", "directory path to use as the base");
+﻿using Raggle.Console.Builders;
+using Raggle.Console.Settings;
+using Raggle.Console.Systems;
+using Raggle.Console.UI;
+using Spectre.Console;
+using System.CommandLine;
 
 var rootCommand = new RootCommand("A simple console app that says hello");
+
+var pathOption = new Option<string>(
+    aliases: ["--path", "-p"],
+    description: "directory path to use as the base",
+    isDefault: true,
+    parseArgument: result => 
+    {
+        if (result.Tokens.Count == 0)
+            return Directory.GetCurrentDirectory();
+        else if (result.Tokens.Count > 1)
+            throw new ArgumentException("Just one directory path is allowed");
+        else if (Directory.Exists(result.Tokens[0].Value) == false)
+            throw new ArgumentException("Directory does not exist");
+        else
+            return result.Tokens[0].Value;
+    });
+
+var initOption = new Option<bool>(
+    aliases: ["--init", "-i"],
+    description: "initialize the base directory");
+
 rootCommand.AddOption(pathOption);
+rootCommand.AddOption(initOption);
 
-rootCommand.SetHandler((handle) =>
+rootCommand.SetHandler(async (path, init) =>
 {
-    // Set the base directory for the application
+    var settings = AppSettings.GetSettings(path);
+    if (init || settings is null)
+    {
+        var setup = new SetupUI();
+        settings = setup.Setup(path);
+    }
 
-    // Check setting directory
+    var memory = MemoryServiceBuilder.Build(settings);
+    var fs = new FileSystem(memory);
+    await fs.Initialize(settings.WorkingDirectory);
+    fs.Watch(settings.WorkingDirectory);
 
-    // SetupUI setup = new SetupUI();
-    // setup.Start();
+    var chat = new ChatUI(settings);
+    await chat.StartAsync();
 
-    // FileSystem fs = new FileSystem(baseDir);
-    // fs.Start();
-
-    // ChatUI chat = new ChatUI();
-    // chat.Start();
-    
-}, pathOption);
+}, pathOption, initOption);
 
 return rootCommand.Invoke(args);

@@ -5,13 +5,18 @@ using System.Text;
 
 namespace Raggle.Core.Services;
 
-public class MemoryService : IMemoryService
+public class FileMemoryService : IMemoryService
 {
     private readonly IKernelMemory _memory;
 
-    public MemoryService(IKernelMemory kernelMemory)
+    public FileMemoryService(IKernelMemory kernelMemory)
     {
         _memory = kernelMemory;
+    }
+
+    public async Task<string> MemorizeTextAsync(string text, string documentId)
+    {
+        return await _memory.ImportTextAsync(text, documentId);
     }
 
     public async Task<string> MemorizeDocumentAsync(string filePath)
@@ -23,14 +28,9 @@ public class MemoryService : IMemoryService
             : await _memory.ImportDocumentAsync(filePath, documentId);
     }
 
-    public async Task<string[]> MemorizeDocumentsAsync(string[] filePaths)
+    public async Task<string[]> MemorizeDocumentsAsync(IEnumerable<string> filePaths)
     {
         return await Task.WhenAll(filePaths.Select(MemorizeDocumentAsync));
-    }
-
-    public async Task<string> MemorizeTextAsync(string text, string documentId)
-    {
-        return await _memory.ImportTextAsync(text, documentId);
     }
 
     public async Task<string> MemorizeWebPageAsync(string url)
@@ -42,12 +42,18 @@ public class MemoryService : IMemoryService
             : await _memory.ImportWebPageAsync(url, documentId);
     }
 
-    public async Task<string[]> MemorizeWebPagesAsync(string[] urls)
+    public async Task<string[]> MemorizeWebPagesAsync(IEnumerable<string> urls)
     {
         return await Task.WhenAll(urls.Select(MemorizeWebPageAsync));
     }
 
-    public async Task<string> GetFactsAsync(string query, int limit = 10, double minRelevance = 0.5)
+    public async Task UnMemorizeAsync(string content)
+    {
+        var documentId = GenerateDocumentId(content);
+        await _memory.DeleteDocumentAsync(documentId);
+    }
+
+    public async Task<string> GetInformationAsync(string query, int limit = 10, double minRelevance = 0.5)
     {
         var memories = await _memory.SearchAsync(query, limit: limit, minRelevance: minRelevance);
         return memories.Results.SelectMany(m => m.Partitions)
@@ -55,7 +61,7 @@ public class MemoryService : IMemoryService
             .Trim();
     }
 
-    private static string GenerateDocumentId(string cotent)
+    public string GenerateDocumentId(string cotent)
     {
         var encryption = SHA256.HashData(Encoding.UTF8.GetBytes(cotent));
         return Convert.ToHexString(encryption).ToUpperInvariant();

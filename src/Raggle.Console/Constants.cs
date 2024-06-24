@@ -17,7 +17,6 @@ public static class Constants
 You are a helpful assistant replying to user questions using information from your memory.
 Reply very briefly and concisely, get to the point immediately. Don't provide long explanations unless necessary.
 Sometimes you don't have relevant memories so you reply saying you don't know, don't have the information.
-The topic of the conversation is Kernel Memory (KM) and Semantic Kernel (SK).
 """;
 
     // Chat

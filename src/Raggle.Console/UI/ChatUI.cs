@@ -2,6 +2,8 @@
 using Microsoft.SemanticKernel;
 using System.Text;
 using Spectre.Console;
+using Raggle.Console.Settings;
+using Raggle.Console.Builders;
 
 namespace Raggle.Console.UI;
 
@@ -9,64 +11,45 @@ public class ChatUI
 {
     private readonly ChatHistory _history;
     private readonly IChatCompletionService _chat;
-    private readonly CancellationTokenSource _cts = new();
+    private readonly StringBuilder reply = new();
 
-    public ChatUI(string openAIApiKey)
+    public ChatUI(AppSettings settings)
     {
-        var kernel = Kernel.CreateBuilder()
-            .AddOpenAIChatCompletion(modelId: "gpt-4o", apiKey: openAIApiKey)
-            .Build();
-        _chat = kernel.GetRequiredService<IChatCompletionService>();
+        _chat = ChatServiceBuilder.Build(settings);
         _history = new ChatHistory(Constants.DEFAULT_SYSTEM_PROMPT);
-    }
-
-    public void Initialize()
-    {
-
     }
 
     public async Task StartAsync()
     {
         System.Console.Clear();
-        WelcomeMessage();
-
-        while (_cts.IsCancellationRequested == false)
-        {
-            var prompt = UserAsk();
-            if (string.IsNullOrWhiteSpace(prompt)) continue;
-            await BotAnswerAsync(prompt);
-        }
-    }
-
-    public void Stop()
-    {
-        _cts.Cancel();
-    }
-
-    private void WelcomeMessage()
-    {
         AnsiConsole.Markup($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] {Constants.WELCOME_MESSAGE}");
-    }
 
-    private async Task BotAnswerAsync(string prompt)
-    {
-        //var longTermMemory = await GetLongTermMemory(memory, userMessage);
-        //chatHistory[0].Content = $"{systemPrompt}\n\nLong term memory:\n{longTermMemory}";
-        var reply = new StringBuilder();
-        AnsiConsole.Markup($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] ");
-        await foreach (StreamingChatMessageContent stream in _chat.GetStreamingChatMessageContentsAsync(_history))
+        while (true)
         {
-            AnsiConsole.Markup(stream.Content ?? "");
-            reply.Append(stream.Content);
+            var prompt = AnsiConsole.Ask<string>($"[bold {Constants.USER_COLOR}]{Constants.USER_NAME} >[/] ").Trim();
+            if (prompt == "exit()")
+            {
+                Environment.Exit(0);
+                break;
+            }
+            if (prompt == "clear()")
+            {
+                _history.Clear();
+                System.Console.Clear();
+                continue;
+            }
+            
+            _history.AddUserMessage(prompt);
+            //var longTermMemory = await GetLongTermMemory(memory, userMessage);
+            //_history[0].Content = $"{systemPrompt}\n\nLong term memory:\n{longTermMemory}";
+            AnsiConsole.Markup($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] ");
+            await foreach (StreamingChatMessageContent stream in _chat.GetStreamingChatMessageContentsAsync(_history))
+            {
+                AnsiConsole.Write(stream.Content ?? "");
+                reply.Append(stream.Content);
+            }
+            AnsiConsole.WriteLine();
+            _history.AddAssistantMessage(reply.ToString());
         }
-        AnsiConsole.WriteLine();
-        _history.AddAssistantMessage(reply.ToString());
-    }
-
-    private string UserAsk()
-    {
-        var prompt = AnsiConsole.Ask<string>($"[bold {Constants.USER_COLOR}]{Constants.USER_NAME} >[/] ");
-        if (!string.IsNullOrWhiteSpace(prompt)) _history.AddUserMessage(prompt);
-        return prompt;
     }
 }
