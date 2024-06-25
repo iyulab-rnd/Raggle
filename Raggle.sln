@@ -22,7 +22,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raggle.CoreTests", "tests\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raggle.Console", "src\Raggle.Console\Raggle.Console.csproj", "{75428BC6-29CB-4BD4-8C7F-F77AAE938C26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raggle.Abstractions", "src\Raggle.Abstractions\Raggle.Abstractions.csproj", "{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Raggle.Abstractions", "src\Raggle.Abstractions\Raggle.Abstractions.csproj", "{4DAD393A-5B3B-43A2-8B65-6360D4C7374D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A50A8012-0E5C-4FC2-B942-33FC87A965B1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,10 +5,10 @@ namespace Raggle.Console.Systems;
 
 public class FileSystem
 {
-    private readonly IMemoryService _memory;
+    private readonly IRaggleService _memory;
     private readonly FileSystemWatcher _watcher = new();
 
-    public FileSystem(IMemoryService memoryService)
+    public FileSystem(IRaggleService memoryService)
     {
         _memory = memoryService;
     }

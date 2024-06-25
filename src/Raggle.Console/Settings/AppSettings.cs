@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Raggle.Core.Options.Chat;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Raggle.Console.Settings;
@@ -14,11 +15,11 @@ public enum AIPlatforms
 public class AppSettings
 {
     public required string WorkingDirectory { get; set; }
-    public required PromptSetting Prompt { get; set; }
     public required AIPlatforms PlatformType { get; set; }
-    public required OpenAISetting OpenAI { get; set; }
-    public required AzureAISetting AzureAI { get; set; }
-    public required GoogleAISetting GoogleAI { get; set; }
+    public required PromptOption Prompt { get; set; }
+    public required OpenAIOption OpenAI { get; set; }
+    public required AzureAIOption AzureAI { get; set; }
+    public required GoogleAIOption GoogleAI { get; set; }
 
     public static AppSettings? GetSettings(string baseDir)
     {

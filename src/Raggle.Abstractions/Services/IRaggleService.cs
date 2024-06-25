@@ -1,7 +1,7 @@
 ﻿
 namespace Raggle.Abstractions.Services;
 
-public interface IMemoryService
+public interface IRaggleService
 {
     string GenerateDocumentId(string cotent);
     Task<string> GetInformationAsync(string query, int limit = 10, double minRelevance = 0.5);

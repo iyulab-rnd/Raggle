@@ -24,7 +24,10 @@ public enum OpenAIEmbeddingModel
 
 public class OpenAIOption
 {
+    public required string ApiKey { get; set; } = string.Empty;
     public OpenAIChatModel ChatModel { get; set; } = OpenAIChatModel.GPT4o;
     public OpenAIEmbeddingModel EmbeddingModel { get; set; } = OpenAIEmbeddingModel.TextDavinci003;
-    public string ApiKey { get; set; } = string.Empty;
+    public int ChatModelMaxTokenTotal { get; set; } = 2048;
+    public int EmbeddingModelMaxTokenTotal { get; set; } = 8191;
+    public int MaxRetries { get; set; } = 10;
 }

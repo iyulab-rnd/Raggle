@@ -1,5 +1,4 @@
-﻿using Raggle.Console.Builders;
-using Raggle.Console.Settings;
+﻿using Raggle.Console.Settings;
 using Raggle.Console.Systems;
 using Raggle.Console.UI;
 using Spectre.Console;

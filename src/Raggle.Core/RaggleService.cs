@@ -1,17 +1,26 @@
 ﻿using Microsoft.KernelMemory;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Raggle.Abstractions.Services;
+using Raggle.Console.Settings;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Raggle.Core.Services;
+namespace Raggle.Core;
 
-public class FileMemoryService : IMemoryService
+public class RaggleService : IRaggleService
 {
+    private readonly IChatCompletionService _chat;
     private readonly IKernelMemory _memory;
+    private readonly PromptOption _prompt;
 
-    public FileMemoryService(IKernelMemory kernelMemory)
+    public RaggleService(
+        IChatCompletionService chatService, 
+        IKernelMemory kernelMemory,
+        PromptOption? prompt = null)
     {
         _memory = kernelMemory;
+        _chat = chatService;
+        _prompt = prompt ?? new PromptOption();
     }
 
     public async Task<string> MemorizeTextAsync(string text, string documentId)
@@ -23,7 +32,7 @@ public class FileMemoryService : IMemoryService
     {
         var documentId = GenerateDocumentId(filePath);
         var isExist = await _memory.IsDocumentReadyAsync(documentId);
-        return isExist 
+        return isExist
             ? documentId
             : await _memory.ImportDocumentAsync(filePath, documentId);
     }
