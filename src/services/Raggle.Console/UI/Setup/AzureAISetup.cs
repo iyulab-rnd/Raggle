@@ -1,13 +1,16 @@
-﻿using Raggle.Console.Settings;
+﻿using Raggle.Core.Options.Platforms;
+using Spectre.Console;
 
 namespace Raggle.Console.UI.Setup;
 public class AzureAISetup
 {
-    public AzureAISetting Setup()
+    public AzureAIOption Setup()
     {
-        return new AzureAISetting
+        var apiKey = AnsiConsole.Ask<string>("Enter your Azure AI API key: ");
+
+        return new AzureAIOption
         {
-            
+            ApiKey = apiKey,
         };
     }
 }

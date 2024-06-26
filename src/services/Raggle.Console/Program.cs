@@ -1,7 +1,6 @@
-﻿using Raggle.Console.Settings;
+﻿using Raggle.Console;
 using Raggle.Console.Systems;
 using Raggle.Console.UI;
-using Spectre.Console;
 using System.CommandLine;
 
 var rootCommand = new RootCommand("A simple console app that says hello");
@@ -31,19 +30,21 @@ rootCommand.AddOption(initOption);
 
 rootCommand.SetHandler(async (path, init) =>
 {
-    var settings = AppSettings.GetSettings(path);
+    var builder = new AppBuilder(path);
+    var settings = builder.GetSettings();
     if (init || settings is null)
     {
         var setup = new SetupUI();
         settings = setup.Setup(path);
+        builder.SaveSettings(settings);
     }
 
-    var memory = MemoryServiceBuilder.Build(settings);
-    var fs = new FileSystem(memory);
-    await fs.Initialize(settings.WorkingDirectory);
+    var raggle = builder.BuildRaggleService(settings!);
+    var fs = new FileSystem(raggle);
+    await fs.Initialize(settings!.WorkingDirectory);
     fs.Watch(settings.WorkingDirectory);
 
-    var chat = new ChatUI(settings);
+    var chat = new ChatUI(raggle);
     await chat.StartAsync();
 
 }, pathOption, initOption);

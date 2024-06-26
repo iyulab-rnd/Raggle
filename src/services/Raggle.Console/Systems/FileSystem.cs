@@ -1,22 +1,24 @@
 ﻿using Spectre.Console;
-using Raggle.Abstractions.Services;
+using Raggle.Abstractions;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Raggle.Console.Systems;
 
 public class FileSystem
 {
-    private readonly IRaggleService _memory;
     private readonly FileSystemWatcher _watcher = new();
+    private readonly IRaggleService _raggle;
 
-    public FileSystem(IRaggleService memoryService)
+    public FileSystem(IRaggleService raggleService)
     {
-        _memory = memoryService;
+        _raggle = raggleService;
     }
 
     public async Task Initialize(string baseDir)
     {
         var files = CollectFiles(baseDir);
-        await _memory.MemorizeDocumentsAsync(files);
+        await MemorizeFilesAsync(files);
     }
 
     public void Watch(string directory)
@@ -39,7 +41,7 @@ public class FileSystem
         Task.Run(async () =>
         {
             if (IsSetting(e.FullPath)) return;
-            await _memory.MemorizeDocumentAsync(e.FullPath);
+            await MemorizeFileAsync(e.FullPath);
         });
     }
 
@@ -48,8 +50,8 @@ public class FileSystem
         Task.Run(async () =>
         {
             if (IsSetting(e.FullPath)) return;
-            await _memory.UnMemorizeAsync(e.FullPath);
-            await _memory.MemorizeDocumentAsync(e.FullPath);
+            await UnMemorizeFileAsync(e.FullPath);
+            await MemorizeFileAsync(e.FullPath);
         });
     }
 
@@ -58,18 +60,23 @@ public class FileSystem
         Task.Run(async () =>
         {
             if (IsSetting(e.FullPath)) return;
-            await _memory.MemorizeDocumentAsync(e.FullPath);
-            await _memory.UnMemorizeAsync(e.OldFullPath);
+            await MemorizeFileAsync(e.FullPath);
+            await UnMemorizeFileAsync(e.OldFullPath);
         });
     }
 
     private void OnDeleted(object sender, FileSystemEventArgs e)
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             if (IsSetting(e.FullPath)) return;
-            _memory.UnMemorizeAsync(e.FullPath);
+            await UnMemorizeFileAsync(e.FullPath);
         });
+    }
+
+    private bool IsSetting(string path)
+    {
+        return path.Contains(Constants.SETTING_DIRECTORY);
     }
 
     private IEnumerable<string> CollectFiles(string baseDir)
@@ -92,8 +99,31 @@ public class FileSystem
         return files;
     }
 
-    private bool IsSetting(string path)
+    private async Task MemorizeFileAsync(string path)
     {
-        return path.Contains(Constants.SETTING_DIRECTORY);
+        var documentId = GenerateDocumentId(path);
+        await _raggle.MemorizeDocumentAsync(documentId, path);
+    }
+
+    private async Task MemorizeFilesAsync(IEnumerable<string> paths)
+    {
+        await Task.WhenAll(paths.Select(MemorizeFileAsync));
+    }
+
+    private async Task UnMemorizeFileAsync(string path)
+    {
+        var documentId = GenerateDocumentId(path);
+        await _raggle.UnMemorizeAsync(documentId);
+    }
+
+    private async Task UnMemorizeFilesAsync(IEnumerable<string> paths)
+    {
+        await Task.WhenAll(paths.Select(UnMemorizeFileAsync));
+    }
+
+    private string GenerateDocumentId(string cotent)
+    {
+        var encryption = SHA256.HashData(Encoding.UTF8.GetBytes(cotent));
+        return Convert.ToHexString(encryption).ToUpperInvariant();
     }
 }

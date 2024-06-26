@@ -1,5 +1,6 @@
 ﻿using Raggle.Console.Settings;
 using Raggle.Console.UI.Setup;
+using Raggle.Core.Options.Platforms;
 using Spectre.Console;
 
 namespace Raggle.Console.UI;
@@ -14,9 +15,8 @@ public class SetupUI
         var step2 = new PlatformSetup();
         var platformType = step2.Setup();
 
-        var openAI = new OpenAISetting();
-        var azureAI = new AzureAISetting();
-        var googleAI = new GoogleAISetting();
+        var openAI = new OpenAIOption();
+        var azureAI = new AzureAIOption();
 
         if (platformType == AIPlatforms.OpenAI)
         {
@@ -28,20 +28,17 @@ public class SetupUI
             var step3 = new AzureAISetup();
             azureAI = step3.Setup();
         }
-        else if (platformType == AIPlatforms.GoogleAI)
-        {
-            var step3 = new GoogleAISetup();
-            googleAI = step3.Setup();
-        }
 
         return new AppSettings
         {
             WorkingDirectory = baseDir,
             Prompt = prompt,
-            PlatformType = platformType,
-            OpenAI = openAI,
-            AzureAI = azureAI,
-            GoogleAI = googleAI,
+            Platforms = new PlatformOptions
+            {
+                PlatformType = platformType,
+                OpenAI = openAI,
+                AzureAI = azureAI
+            }
         };
     }
 

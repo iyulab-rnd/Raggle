@@ -1,4 +1,5 @@
-﻿using Raggle.Core.Options.Chat;
+﻿using Raggle.Core.Options.Platforms;
+using Raggle.Core.Options.Prompts;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -9,32 +10,18 @@ public enum AIPlatforms
 {
     OpenAI,
     AzureAI,
-    GoogleAI,
 }
 
 public class AppSettings
 {
     public required string WorkingDirectory { get; set; }
+    public required DefaultPromptOption Prompt { get; set; }
+    public required PlatformOptions Platforms { get; set; }
+}
+
+public class PlatformOptions
+{
     public required AIPlatforms PlatformType { get; set; }
-    public required PromptOption Prompt { get; set; }
-    public required OpenAIOption OpenAI { get; set; }
-    public required AzureAIOption AzureAI { get; set; }
-    public required GoogleAIOption GoogleAI { get; set; }
-
-    public static AppSettings? GetSettings(string baseDir)
-    {
-        try
-        {
-            var configDir = Path.Combine(baseDir, Constants.SETTING_DIRECTORY);
-            var settingsPath = Path.Combine(configDir, Constants.SETTING_FILENAME);
-
-            if (!File.Exists(settingsPath)) return null;
-
-            return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(settingsPath));
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
+    public OpenAIOption OpenAI { get; set; }
+    public AzureAIOption AzureAI { get; set; }
 }

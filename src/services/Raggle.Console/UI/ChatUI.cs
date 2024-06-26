@@ -1,29 +1,21 @@
-﻿using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel;
-using System.Text;
-using Spectre.Console;
-using Raggle.Console.Settings;
-using Raggle.Console.Builders;
+﻿using Spectre.Console;
+using Raggle.Abstractions;
 
 namespace Raggle.Console.UI;
 
 public class ChatUI
 {
-    private readonly ChatHistory _history;
-    private readonly IChatCompletionService _chat;
-    private readonly StringBuilder reply = new();
+    private readonly IRaggleService _raggle;
 
-    public ChatUI(AppSettings settings)
+    public ChatUI(IRaggleService raggleService)
     {
-        _chat = ChatServiceBuilder.Build(settings);
-        _history = new ChatHistory(Constants.DEFAULT_SYSTEM_PROMPT);
+        _raggle = raggleService;
     }
 
     public async Task StartAsync()
     {
         System.Console.Clear();
-        AnsiConsole.Markup($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] {Constants.WELCOME_MESSAGE}");
-
+        AnsiConsole.MarkupLine($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] {Constants.WELCOME_MESSAGE}");
         while (true)
         {
             var prompt = AnsiConsole.Ask<string>($"[bold {Constants.USER_COLOR}]{Constants.USER_NAME} >[/] ").Trim();
@@ -34,22 +26,16 @@ public class ChatUI
             }
             if (prompt == "clear()")
             {
-                _history.Clear();
                 System.Console.Clear();
                 continue;
             }
-            
-            _history.AddUserMessage(prompt);
-            //var longTermMemory = await GetLongTermMemory(memory, userMessage);
-            //_history[0].Content = $"{systemPrompt}\n\nLong term memory:\n{longTermMemory}";
+
             AnsiConsole.Markup($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] ");
-            await foreach (StreamingChatMessageContent stream in _chat.GetStreamingChatMessageContentsAsync(_history))
+            await foreach (var stream in _raggle.AskStreamingAsync(prompt))
             {
-                AnsiConsole.Write(stream.Content ?? "");
-                reply.Append(stream.Content);
+                AnsiConsole.Write(stream ?? "");
             }
             AnsiConsole.WriteLine();
-            _history.AddAssistantMessage(reply.ToString());
         }
     }
 }

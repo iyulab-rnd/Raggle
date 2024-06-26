@@ -18,7 +18,7 @@ public class PlatformSetup
             new SelectionPrompt<AIPlatforms>()
                 .Title("Please select the AI platform you want to use:")
                 .PageSize(3)
-                .AddChoices(AIPlatforms.OpenAI, AIPlatforms.AzureAI, AIPlatforms.GoogleAI)
+                .AddChoices(AIPlatforms.OpenAI, AIPlatforms.AzureAI)
         );
 
         return platform;
