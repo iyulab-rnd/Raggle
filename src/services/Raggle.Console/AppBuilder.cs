@@ -1,7 +1,6 @@
 ﻿using Raggle.Abstractions;
 using Raggle.Console.Settings;
 using Raggle.Core;
-using Raggle.Core.Options.Vectors;
 using System.Text.Json;
 
 namespace Raggle.Console;
@@ -27,21 +26,27 @@ public class AppBuilder : IDisposable
     public IRaggleService BuildRaggleService(AppSettings settings)
     {
         var builder = new RaggleServiceBuilder();
-        var platform = settings.Platforms.PlatformType;
-        if (platform == AIPlatforms.OpenAI)
+        var platformType = settings.Platforms.Type;
+        if (platformType == PlatformTypes.OpenAI)
         {
             builder.WithOpenAI(settings.Platforms.OpenAI);
         }
-        else if (platform == AIPlatforms.AzureAI)
+
+        var vectorType = settings.VectorDB.Type;
+        if (vectorType == VectorDBTypes.File)
         {
-            builder.WithAzureAI(settings.Platforms.AzureAI);
+            var vectorOption = settings.VectorDB.FileVectorDB;
+            vectorOption.ChunkDirectory = Path.Combine(_configDir, Constants.FILES_DIRECTORY);
+            vectorOption.VectorDirectory = Path.Combine(_configDir, Constants.VECTOR_DIRECTORY);
+            builder.WithFileVectorDB(vectorOption);
         }
 
-        builder.WithFileVector(new FileVectorOption
+        var promptType = settings.Prompts.Type;
+        if (promptType == PromptTypes.Simple)
         {
-            ChunkDirectory = Path.Combine(_configDir, Constants.FILES_DIRECTORY),
-            VectorDirectory = Path.Combine(_configDir, Constants.VECTOR_DIRECTORY)
-        });
+            var promptOption = settings.Prompts.SimplePrompt;
+            builder.WithSimplePrompt(promptOption);
+        }
 
         return builder.Build();
     }
@@ -49,12 +54,21 @@ public class AppBuilder : IDisposable
     public void SaveSettings(AppSettings settings)
     {
         if (!Directory.Exists(_configDir))
+        {
             Directory.CreateDirectory(_configDir);
+            File.SetAttributes(_configDir, File.GetAttributes(_configDir) | FileAttributes.Hidden);
+        }
 
         File.WriteAllText(_settingsPath, JsonSerializer.Serialize(settings, new JsonSerializerOptions
         {
             WriteIndented = true
         }));
+    }
+
+    public void DeleteConfig()
+    {
+        if (Directory.Exists(_configDir))
+            Directory.Delete(_configDir, true);
     }
 
     public AppSettings? GetSettings()

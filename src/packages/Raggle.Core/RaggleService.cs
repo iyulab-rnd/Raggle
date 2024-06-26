@@ -1,27 +1,28 @@
 ﻿using Microsoft.KernelMemory;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Raggle.Abstractions;
-using Raggle.Core.Options.Prompts;
+using Raggle.Abstractions.Prompts;
 using System.Text;
 
 namespace Raggle.Core;
 
 public class RaggleService : IRaggleService
 {
-    private const string DEFAULT_INDEX = "thisistest";
+    private const string DEFAULT_INDEX = "index_test_tt";
     private readonly IChatCompletionService _chat;
     private readonly IKernelMemory _memory;
-    private readonly DefaultPromptOption _prompt;
-    private readonly ChatHistory history = new("you are bot");
+    private readonly IPromptProvider? _prompt;
+    private readonly ChatHistory _history;
 
     public RaggleService(
         IChatCompletionService chatService, 
         IKernelMemory kernelMemory,
-        DefaultPromptOption? prompt = null)
+        IPromptProvider? promptProvider = null)
     {
         _memory = kernelMemory;
         _chat = chatService;
-        _prompt = prompt ?? new DefaultPromptOption();
+        _prompt = promptProvider;
+        _history = new(promptProvider?.GetPrompt() ?? string.Empty);
     }
 
     public async Task<string> MemorizeTextAsync(string documentId, string text, string? index = null)
@@ -71,10 +72,10 @@ public class RaggleService : IRaggleService
     public async IAsyncEnumerable<string> AskStreamingAsync(string query)
     {
         var information = await GetInformationAsync(query);
-        history[0].Content = BuildPrompt(_prompt.SystemPrompt, information);
-        history.AddUserMessage(query);
+        _history[0].Content = _prompt?.GetPromptWithInfo(information) ?? string.Empty;
+        _history.AddUserMessage(query);
         var reply = new StringBuilder();
-        await foreach (var stream in _chat.GetStreamingChatMessageContentsAsync(history))
+        await foreach (var stream in _chat.GetStreamingChatMessageContentsAsync(_history))
         {
             var content = stream.Content;
             if (content is not null)
@@ -83,11 +84,12 @@ public class RaggleService : IRaggleService
                 yield return content;
             }
         }
-        history.AddAssistantMessage(reply.ToString());
+        _history.AddAssistantMessage(reply.ToString());
     }
 
-    public string BuildPrompt(string system, string information)
+    public void ClearHistory()
     {
-        return $"{system}\n\nInformation:\n{information}";
+        _history.Clear();
+        _history.AddSystemMessage(_prompt?.GetPrompt() ?? string.Empty);
     }
 }

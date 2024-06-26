@@ -31,17 +31,23 @@ rootCommand.AddOption(initOption);
 rootCommand.SetHandler(async (path, init) =>
 {
     var builder = new AppBuilder(path);
-    var settings = builder.GetSettings();
-    if (init || settings is null)
+    if (init)
     {
-        var setup = new SetupUI();
-        settings = setup.Setup(path);
+        builder.DeleteConfig();
+    }
+    
+    var settings = builder.GetSettings();
+    if (settings is null)
+    {
+        settings = new SetupUI().Setup(path);
         builder.SaveSettings(settings);
     }
 
-    var raggle = builder.BuildRaggleService(settings!);
+    var raggle = builder.BuildRaggleService(settings);
+    builder.Dispose();
+
     var fs = new FileSystem(raggle);
-    await fs.Initialize(settings!.WorkingDirectory);
+    await fs.Initialize(settings.WorkingDirectory);
     fs.Watch(settings.WorkingDirectory);
 
     var chat = new ChatUI(raggle);

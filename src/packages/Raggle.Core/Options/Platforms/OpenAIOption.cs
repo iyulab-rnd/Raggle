@@ -31,5 +31,6 @@ public class OpenAIOption
     public OpenAIEmbeddingModel EmbeddingModel { get; set; } = OpenAIEmbeddingModel.Text_Embedding_3_Large;
     public int TextModelMaxToken { get; set; } = 16_384;
     public int EmbeddingModelMaxToken { get; set; } = 8_191;
+    public int MaxEmbeddingBatchSize { get; set; } = 100;
     public int MaxRetries { get; set; } = 10;
 }

@@ -1,6 +1,5 @@
 ﻿using Raggle.Console.Settings;
 using Raggle.Console.UI.Setup;
-using Raggle.Core.Options.Platforms;
 using Spectre.Console;
 
 namespace Raggle.Console.UI;
@@ -9,42 +8,30 @@ public class SetupUI
 {
     public AppSettings Setup(string baseDir)
     {
-        var step1 = new PromptSetup();
-        var prompt = step1.Setup();
+        AnsiConsole.Clear();
+        var settings = new AppSettings { WorkingDirectory = baseDir };
 
-        var step2 = new PlatformSetup();
-        var platformType = step2.Setup();
+        var platformType = new PlatformSetup().Setup();
+        settings.Platforms.Type = platformType;
+        AnsiConsole.Clear();
 
-        var openAI = new OpenAIOption();
-        var azureAI = new AzureAIOption();
-
-        if (platformType == AIPlatforms.OpenAI)
+        if (platformType == PlatformTypes.OpenAI)
         {
-            var step3 = new OpenAISetup();
-            openAI = step3.Setup();
-        }
-        else if (platformType == AIPlatforms.AzureAI)
-        {
-            var step3 = new AzureAISetup();
-            azureAI = step3.Setup();
+            var openAI = new OpenAISetup().Setup();
+            settings.Platforms.OpenAI = openAI;
+            AnsiConsole.Clear();
         }
 
-        return new AppSettings
-        {
-            WorkingDirectory = baseDir,
-            Prompt = prompt,
-            Platforms = new PlatformOptions
-            {
-                PlatformType = platformType,
-                OpenAI = openAI,
-                AzureAI = azureAI
-            }
-        };
+        var prompt = new PromptSetup().Setup();
+        settings.Prompts.SimplePrompt = prompt;
+        AnsiConsole.Clear();
+
+        return settings;
     }
 
     public static void Exit()
     {
-        AnsiConsole.MarkupLine("[red]Exiting the setup. Goodbye![/]");
+        AnsiConsole.MarkupLine("[green]Exiting the setup. Goodbye![/]");
         Environment.Exit(0);
     }
 }

@@ -3,25 +3,33 @@ using Spectre.Console;
 
 namespace Raggle.Console.UI.Setup;
 
-
-// 현재 스텝은 Rag를 사용한 유저에게 BOT에게 어떤 파일들인지에 대해
-// 제일 앞에서 시스템 프로프트 뒤에 붙일 유저 프로프트를 설정하는 스텝이다.
 public class PromptSetup
 {
-    public DefaultPromptOption Setup()
+    public SimplePromptOption Setup()
     {
         AnsiConsole.MarkupLine(
 """
-[bold]First Step[/]
-"""
-            );
+Welcome to the file description step!
+            
+In this step, you will provide a description of the files to the bot. 
+This information is crucial as it helps the bot understand the context 
+and content of the files you are working with. A good description can 
+significantly enhance the bot's ability to assist you effectively.
 
-        var userPrompt = AnsiConsole.Ask<string>(
-            "Please enter the prompt describing the files you want to add to the system: "
-        );
+Here are some tips for a good file description:
+1. **Be Specific**: Include key details about the file content, such as main topics, important sections, or special formats.
+2. **Be Clear**: Use clear and concise language to avoid any confusion.
+3. **Be Relevant**: Only include information that is directly related to the files' purpose and usage.
 
-        return new DefaultPromptOption
+Please follow the prompt below to provide your file description.
+""");
+
+        var userPrompt = AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter your description:"));
+
+        return new SimplePromptOption
         {
+            SystemPrompt = Constants.DEFAULT_SYSTEM_PROMPT,
             UserPrompt = userPrompt
         };
     }

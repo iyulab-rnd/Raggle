@@ -9,7 +9,10 @@ using Microsoft.KernelMemory.AI.OpenAI;
 using Raggle.Abstractions.Attributes;
 using static Microsoft.KernelMemory.OpenAIConfig;
 using Raggle.Core.Options.Platforms;
-using Raggle.Core.Options.Vectors;
+using Raggle.Core.Options.VectorDB;
+using Raggle.Core.Options.Prompts;
+using Raggle.Core.Prompts;
+using Raggle.Abstractions.Prompts;
 
 namespace Raggle.Core;
 
@@ -17,12 +20,13 @@ public class RaggleServiceBuilder : IRaggleServiceBuilder
 {
     public IKernelBuilder KernelBuilder { get; set; } = Kernel.CreateBuilder();
     public IKernelMemoryBuilder MemoryBuilder { get; set; } = new KernelMemoryBuilder();
+    public IPromptProvider? PromptProvider { get; set; }
 
     public IRaggleService Build()
     {
         var memory = MemoryBuilder.Build();
         var chat = KernelBuilder.Build().GetRequiredService<IChatCompletionService>();
-        return new RaggleService(chat, memory);
+        return new RaggleService(chat, memory, PromptProvider);
     }
 }
 
@@ -43,6 +47,7 @@ public static partial class RaggleServiceBuilderExtension
             TextModelMaxTokenTotal = option.TextModelMaxToken,
             EmbeddingModel = option.EmbeddingModel.GetValue(),
             EmbeddingModelMaxTokenTotal = option.EmbeddingModelMaxToken,
+            MaxEmbeddingBatchSize = option.MaxEmbeddingBatchSize,
             MaxRetries = option.MaxRetries,
         };
         openAIConfig.Validate();
@@ -65,39 +70,9 @@ public static partial class RaggleServiceBuilderExtension
         return builder;
     }
 
-    public static IRaggleServiceBuilder WithAzureAI(
+    public static IRaggleServiceBuilder WithFileVectorDB(
         this IRaggleServiceBuilder builder,
-        AzureAIOption option)
-    {
-        var textGenerationTokenizer = new DefaultGPTTokenizer();
-        var textEmbeddingTokenizer = new DefaultGPTTokenizer();
-
-        var openAIConfig = new OpenAIConfig
-        {
-            APIKey = option.ApiKey,
-            TextModel = option.ChatModel.GetValue(),
-            //TextModelMaxTokenTotal = option.ChatModelMaxTokenTotal,
-            EmbeddingModel = option.EmbeddingModel.GetValue(),
-            //EmbeddingModelMaxTokenTotal = option.EmbeddingModelMaxTokenTotal,
-            //MaxRetries = option.MaxRetries,
-            TextGenerationType = TextGenerationTypes.Chat,
-        };
-        openAIConfig.Validate();
-
-        builder.MemoryBuilder.Services.AddOpenAITextEmbeddingGeneration(openAIConfig, textEmbeddingTokenizer);
-        builder.MemoryBuilder.Services.AddOpenAITextGeneration(openAIConfig, textGenerationTokenizer);
-
-        builder.KernelBuilder.AddOpenAIChatCompletion(
-            modelId: option.ChatModel.GetValue(),
-            apiKey: option.ApiKey
-        );
-
-        return builder;
-    }
-
-    public static IRaggleServiceBuilder WithFileVector(
-        this IRaggleServiceBuilder builder,
-        FileVectorOption option)
+        FileVectorDBOption option)
     {
         builder.MemoryBuilder.WithSimpleFileStorage(new SimpleFileStorageConfig
         {
@@ -110,6 +85,14 @@ public static partial class RaggleServiceBuilderExtension
             StorageType = FileSystemTypes.Disk
         });
 
+        return builder;
+    }
+
+    public static IRaggleServiceBuilder WithSimplePrompt(
+        this IRaggleServiceBuilder builder,
+        SimplePromptOption option)
+    {
+        builder.PromptProvider = new SimplePromptProvider(option);
         return builder;
     }
 }

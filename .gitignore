@@ -9,7 +9,7 @@ obj/
 # NuGet packages
 *.nuget.props
 *.nuget.targets
-packages/
+# packages/
 
 # User-specific files
 *.suo

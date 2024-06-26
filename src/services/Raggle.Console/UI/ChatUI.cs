@@ -14,19 +14,20 @@ public class ChatUI
 
     public async Task StartAsync()
     {
-        System.Console.Clear();
+        AnsiConsole.Clear();
         AnsiConsole.MarkupLine($"[bold {Constants.BOT_COLOR}]{Constants.BOT_NAME} >[/] {Constants.WELCOME_MESSAGE}");
         while (true)
         {
             var prompt = AnsiConsole.Ask<string>($"[bold {Constants.USER_COLOR}]{Constants.USER_NAME} >[/] ").Trim();
-            if (prompt == "exit()")
+            if (IsEqual(prompt, Constants.EXIT_COMMAND))
             {
                 Environment.Exit(0);
                 break;
             }
-            if (prompt == "clear()")
+            if (IsEqual(prompt, Constants.CLEAR_COMMAND))
             {
-                System.Console.Clear();
+                _raggle.ClearHistory();
+                AnsiConsole.Clear();
                 continue;
             }
 
@@ -37,5 +38,10 @@ public class ChatUI
             }
             AnsiConsole.WriteLine();
         }
+    }
+
+    private static bool IsEqual(string a, string b)
+    {
+        return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
     }
 }

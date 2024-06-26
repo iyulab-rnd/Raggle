@@ -17,6 +17,7 @@ public class FileSystem
 
     public async Task Initialize(string baseDir)
     {
+        AnsiConsole.MarkupLine($"[bold green]Initializing base directory: {baseDir} [/]");
         var files = CollectFiles(baseDir);
         await MemorizeFilesAsync(files);
     }
